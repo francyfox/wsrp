@@ -15,8 +15,8 @@
 }
 
 body {
-  background: linear-gradient(45deg, #012c45, #1c7dbd);
-  color: #e7e7e7;
+  background: linear-gradient(45deg, #939393, #fdfdfd);
+  color: #212121;
 }
 
 a {
@@ -46,63 +46,154 @@ body {
 }
 
 h1 {
-  font-size: 3.2em;
+  display: none;
+}
+
+.bg-text {
+  top: 0;
+  position: fixed;
+  font-size: 10vw;
   line-height: 1.1;
+  font-family: 'Playfair Display SC', serif;
+  font-weight: 400;
+  background: -webkit-linear-gradient(#ffffff, #636363);
+  transform: rotate3d(1, 1, 1, 292deg);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  z-index: 0;
+  user-select: none;
 }
 
 button {
+  width: 10vw;
+  height: 10vw;
   display: flex;
+  justify-content: center;
   align-items: center;
-  border-radius: 8px;
+  border-radius: 100%;
   border: 1px solid transparent;
-  padding: 5px 1.2em;
+  padding: 1.5em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: background-color 0.25s;
-  background: #646cff;
+  background: #212121;
+
 }
 button svg path {
-  fill: #fdf3e9;
-  stroke: #fdf3e9;
+  fill: #d7d3cc;
+  stroke: #d7d3cc;
+
 }
 button:hover {
-  background: #6266ce;
+  background: radial-gradient(#e2e2e2 10%, #939393 80%);
 }
 
 button:hover svg path {
-  fill: #d7d3cc;
-  stroke: #d7d3cc;
+  fill: #454545;
+  stroke: #454545;
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+button svg {
+  width: 5vw;
+  height: 5vw;
+}
+
+
 .card {
   padding: 2em;
 }
 
 #app {
-  max-width: 1280px;
+  width: 100%;
+  max-width: 560px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+}
+
+section, .container {
+  width: 100%;
+}
+
+.container, button, select {
+  z-index: 1;
+}
+
+button, select {
+  animation: 1s ease-out 0s 1 slideInLeft;
+}
+
+.progress {
+  animation: 1s ease-out 0s 1 slideInRight;
 }
 
 .row {
   display: flex;
 }
 
-.__h-gap-10 {
-  gap: 10px 10px;
+.__h-gap-2 {
+  gap: 2em;
 }
 
 .__h-ai-c {
   align-items: center;
 }
 
+.__h-jc-sb {
+  justify-content: space-between;
+}
+
+.__h-w-100 {
+  width: 100%;
+}
+
 select {
-  height: 30px;
+  font-size: 3vw;
+  background: #454545;
+  color: #fff;
+  padding: 0.2em 0.5em 0.2em 0.2em;
+  border: 0;
+  border-radius: 30px 30px 0 0;
+  transition: background-color 0.25s;
+}
+
+select:hover {
+  color: #212121;
+  background: #787777;
+  color: #fff;
+}
+
+mark {
+  padding: 0 0.5em;
+  background: #454545;
+  color: #fff;
+  border-radius: 5px 5px 0 0;
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%) scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(100%) scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }

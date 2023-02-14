@@ -1,19 +1,30 @@
 import { ref } from 'vue'
+import { decimal } from '../helper';
+
+//Math.round(bytesRead/bytesTotal*100)
+// bytesFormatted(bytesRead)}/${bytesFormatted(bytesTotal)
+// ${decimal(dlRate)} kbps speed
 export default class AudioCtx {
+  key = ''
+  sourceNode
   state = {
+    startedAt: null,
+    pausedAt: null,
+    paused: false,
     buffer: {
       created: ref(0),
-      played: 0,
-      unPlayed: 0,
+      played: ref(0),
+      unPlayed: ref(0),
       downloaded: {
-        per: 0,
-        at: 0,
-        to: 0
+        per: ref(0),
+        at: ref(0),
+        to: ref(0)
       }
     },
-    downloadSpeed: 0
+    downloadSpeed: ref('')
   }
 
+  error = ref('')
 
   #bufferSize = 0
   #ctx = new (window.AudioContext || window.webkitAudioContext)()
@@ -49,12 +60,17 @@ export default class AudioCtx {
     this.#bufferSize = bitRate * bufferTime
   }
 
-  async playStreamAudio () {
+  async play () {
     const response = await this.fetchAudioSource()
     await this.getBufferFromAudioResponse(response)
-
     // this.addBuffer(reader)
     // await this.decode(reader)
+  }
+
+  pause () {
+    this.sourceNode.stop(0)
+    this.state.pausedAt = Date.now() - this.state.startedAt
+    this.state.paused = true
   }
 
   /**
@@ -75,6 +91,9 @@ export default class AudioCtx {
    * @returns {Promise<Response>}
    */
   async fetchAudioSource () {
+    this.key = `stream-start-${performance.now()}`
+    performance.mark(this.key)
+
     const response = await fetch(this.#url, {
       method : "GET",
       headers: {
@@ -96,6 +115,7 @@ export default class AudioCtx {
     try {
       while (true) {
         const { value, done } = await reader.read()
+        this.state.downloadSpeed = decimal(this.steamStartTime)
         const { buffer } = value
         if (buffer === undefined) {
           throw new Error('Buffer is undefined')
@@ -139,31 +159,47 @@ export default class AudioCtx {
           this.scheduleBuffers()
         }
       } else {
+        this.error.value = 'Buffer is undefined'
         throw new Error(`Buffer is empty`)
       }
 
     } catch (e) {
+      this.error.value = `Decode Error: ${e}`
       throw new Error(`Decode Error: ${e}`)
     }
   }
 
   scheduleBuffers() {
     while (this.#stack.length) {
-      const buffer = this.#stack.shift()
-      const source = this.#ctx.createBufferSource()
+      let buffer = this.#stack.shift()
+      this.sourceNode = this.#ctx.createBufferSource()
 
+      this.sourceNode.onended = () => {
+        this.state.buffer.played.value += 1
+      }
       this.state.buffer.created.value += 1
 
-      source.buffer = buffer
-      source.connect(this.#ctx.destination)
+      this.sourceNode.buffer = buffer
+      this.sourceNode.connect(this.#ctx.destination)
 
       if (this.#currentTimeWithLatency === 0) {
         this.#currentTimeWithLatency = this.#ctx.currentTime + 0.5
       }
 
-      console.log(source)
-      source.start(this.#currentTimeWithLatency)
-      this.#currentTimeWithLatency += source.buffer.duration
+      if (this.state.pausedAt) {
+        this.state.startedAt = Date.now() - this.state.pausedAt;
+        this.sourceNode.start(0, this.state.pausedAt / 1000);
+      }
+      else {
+        this.state.startedAt = Date.now();
+        this.sourceNode.start(0);
+      }
+
+      this.#currentTimeWithLatency += this.sourceNode.buffer.duration
     }
+  }
+
+  get steamStartTime () {
+    return performance.getEntriesByName(this.key)[0].startTime
   }
 }

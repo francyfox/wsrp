@@ -35,8 +35,9 @@ progress.cache::-webkit-progress-value {
 }
 
 .error-msg {
-    color: red;
+    color: #ff4545;
     font-weight: bold;
+    z-index: 1;
 }
 
 .pwa-toast {
