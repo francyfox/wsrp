@@ -64,46 +64,6 @@ h1 {
   user-select: none;
 }
 
-button {
-  width: 10vw;
-  height: 10vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 100%;
-  border: 1px solid transparent;
-  padding: 1.5em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background-color 0.25s;
-  background: #212121;
-
-}
-button svg path {
-  fill: #d7d3cc;
-  stroke: #d7d3cc;
-
-}
-button:hover {
-  background: radial-gradient(#e2e2e2 10%, #939393 80%);
-}
-
-button:hover svg path {
-  fill: #454545;
-  stroke: #454545;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-button svg {
-  width: 5vw;
-  height: 5vw;
-}
-
 
 .card {
   padding: 2em;

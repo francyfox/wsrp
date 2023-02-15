@@ -57,9 +57,51 @@ progress.cache::-webkit-progress-value {
     margin-bottom: 8px;
 }
 .pwa-toast button {
-    border: 1px solid #8885;
+    background: #454545;
+    color: #fff;
     outline: none;
     margin-right: 5px;
     border-radius: 2px;
     padding: 3px 10px;
+}
+
+
+.audio-stream-player .play {
+    width: 10vw;
+    height: 10vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    border: 1px solid transparent;
+    padding: 1.5em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.25s;
+    background: #212121;
+
+}
+.audio-stream-player .play svg path {
+    fill: #d7d3cc;
+    stroke: #d7d3cc;
+
+}
+.audio-stream-player .play:hover {
+    background: radial-gradient(#e2e2e2 10%, #939393 80%);
+}
+
+.play:hover svg path {
+    fill: #454545;
+    stroke: #454545;
+}
+.audio-stream-player .play:focus,
+.audio-stream-player .play:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+}
+
+.audio-stream-player .play svg {
+    width: 5vw;
+    height: 5vw;
 }

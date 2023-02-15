@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { decimal } from '../helper';
+import AudioVisualizer from './audio.visualizer';
 
 //Math.round(bytesRead/bytesTotal*100)
 // bytesFormatted(bytesRead)}/${bytesFormatted(bytesTotal)
@@ -7,10 +8,11 @@ import { decimal } from '../helper';
 export default class AudioCtx {
   key = ''
   sourceNode
+  visualizer = new AudioVisualizer()
   state = {
     startedAt: null,
     pausedAt: null,
-    paused: false,
+    paused: null,
     buffer: {
       created: ref(0),
       played: ref(0),
@@ -58,19 +60,24 @@ export default class AudioCtx {
   constructor (url, bitRate, bufferTime) {
     this.#url = url
     this.#bufferSize = bitRate * bufferTime
+
   }
 
-  async play () {
-    const response = await this.fetchAudioSource()
-    await this.getBufferFromAudioResponse(response)
-    // this.addBuffer(reader)
-    // await this.decode(reader)
-  }
-
-  pause () {
-    this.sourceNode.stop(0)
-    this.state.pausedAt = Date.now() - this.state.startedAt
-    this.state.paused = true
+  async toggle () {
+    setInterval(() => {
+      console.log(this.#ctx.currentTime)
+    }, 1000)
+    if (!this.state.startedAt) {
+      const response = await this.fetchAudioSource()
+      await this.getBufferFromAudioResponse(response)
+    } else {
+      if (!this.state.paused) {
+        this.state.paused = true
+        await this.#ctx.suspend()
+      } else {
+        await this.#ctx.resume()
+      }
+    }
   }
 
   /**
@@ -152,11 +159,14 @@ export default class AudioCtx {
   async decodeStack () {
     try {
       if (this.#buffer.byteLength !== 0) {
+        console.log(this.#buffer)
         const decodedData = await this.#ctx.decodeAudioData(this.#buffer)
         this.#stack.push(decodedData)
 
         if (this.#stack.length) {
-          this.scheduleBuffers()
+          setTimeout(() => {
+            this.scheduleBuffers()
+          }, 0)
         }
       } else {
         this.error.value = 'Buffer is undefined'
@@ -164,13 +174,16 @@ export default class AudioCtx {
       }
 
     } catch (e) {
+      this.#buffer = null
+      await this.decodeStack()
       this.error.value = `Decode Error: ${e}`
-      throw new Error(`Decode Error: ${e}`)
     }
   }
 
   scheduleBuffers() {
     while (this.#stack.length) {
+      if (this.state.buffer.created.value - this.state.buffer.played.value === 3 ) return this
+
       let buffer = this.#stack.shift()
       this.sourceNode = this.#ctx.createBufferSource()
 
@@ -183,17 +196,12 @@ export default class AudioCtx {
       this.sourceNode.connect(this.#ctx.destination)
 
       if (this.#currentTimeWithLatency === 0) {
-        this.#currentTimeWithLatency = this.#ctx.currentTime + 0.5
+        console.log(this.#ctx.currentTime)
+        this.#currentTimeWithLatency = this.#ctx.currentTime + 0.3
       }
 
-      if (this.state.pausedAt) {
-        this.state.startedAt = Date.now() - this.state.pausedAt;
-        this.sourceNode.start(0, this.state.pausedAt / 1000);
-      }
-      else {
-        this.state.startedAt = Date.now();
-        this.sourceNode.start(0);
-      }
+      this.state.startedAt = Date.now();
+      this.sourceNode.start(this.#currentTimeWithLatency);
 
       this.#currentTimeWithLatency += this.sourceNode.buffer.duration
     }

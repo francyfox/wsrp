@@ -26,13 +26,7 @@ const streamApi = new AudioCtx(source.value, 64, 3)
  */
 function changeSource (src) {
   if (src === 'hq' || 'lq') {
-    audio.value.pause()
     source.value = sourceList[src]
-    audio.value.load()
-
-    if (state.value) {
-      audio.value.play()
-    }
   } else {
    throw new Error('Src must be only hq or lq')
   }
@@ -40,15 +34,7 @@ function changeSource (src) {
 
 async function play () {
   state.value = !state.value
-
-  if (state.value) {
-    await streamApi.play()
-    // audio.value.play()
-  } else {
-    streamApi.pause()
-    // audio.value.pause()
-    // audio.value.load()
-  }
+  await streamApi.toggle()
 }
 
 function formatTime (seconds) {
@@ -63,6 +49,7 @@ onMounted(() => {
 <template>
   <div class="audio-stream-player __h-w-100">
     <h1>BFM.RU RADiO</h1>
+    <canvas id="visualizer"></canvas>
     <div class="bg-text">
       <noindex>
       BFM.RU RADiO
@@ -80,7 +67,7 @@ onMounted(() => {
     <div class="row __h-jc-sb __h-gap-2 __h-w-100">
       <div class="row __h-gap-2 __h-ai-c">
         <div class="row control __h-gap-2 __h-ai-c">
-          <button type="button" @click="play()">
+          <button type="button" class="play" @click="play()">
             <svg v-if="!state" xmlns="http://www.w3.org/2000/svg" fill="none" width="30" height="30"  viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
             </svg>
