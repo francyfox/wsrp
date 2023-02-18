@@ -42,7 +42,7 @@ function formatTime (seconds) {
 }
 
 onMounted(() => {
-
+  console.log(streamApi)
 })
 </script>
 

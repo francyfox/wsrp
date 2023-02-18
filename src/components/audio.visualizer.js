@@ -1,46 +1,73 @@
+import butterchurn from 'butterchurn'
+import butterchurnPresets from 'butterchurn-presets'
+
 export default class AudioVisualizer {
-  #canvas = new HTMLCanvasElement()
-  #ctx = new AudioContext()
-  #analyzer = this.#ctx.createAnalyser()
+  /**
+   * @type {HTMLCanvasElement | null}
+   */
+  canvas = null
+  /**
+   * @type {AudioContext | null}
+   */
+  #ctx = null
+  /**
+   * @type {AnalyserNode | null}
+   */
+  analyzer = null
+
+  /**
+   * @type {MediaElementAudioSourceNode | null}
+   */
+  _source = null
+
+  _visualizer = null
 
   /**
    * @description Создаёт визуализацию аудио на canvas
    * @param {AudioContext} ctx
-   * @param {MediaElementAudioSourceNode} source
    * @param {string} selector - canvas selector
    */
-  constructor (selector, source, ctx) {
-    this.#canvas = document.querySelector(selector)
+  constructor (selector, ctx) {
     this.#ctx = ctx
-    this.#analyzer.fftSize = 256
-    source.connect(this.#analyzer)
-    this.#analyzer.connect(this.#ctx.destination)
+    this.analyzer = this.#ctx.createAnalyser()
+    this.analyzer.fftSize = 256
+
+    this._visualizer = butterchurn.createVisualizer(this.#ctx, document.querySelector('canvas'), {
+      width: window.innerWidth,
+      height: window.innerHeight
+    })
   }
 
   /**
    * @description Рисует по длине буфера
-   * @param {Uint8Array} bufferLength
+   * @param {MediaElementAudioSourceNode} source
    * @returns {AudioVisualizer}
    */
-  draw (bufferLength) {
+  draw (source) {
+    const bufferLength = this.analyzer.frequencyBinCount
     const dataArray = new Uint8Array(bufferLength)
-    const { width, heigth } = this.#canvas.style
-    let x = 0
+    const width = window.innerWidth
+    const height = window.innerHeight
 
-    this.#analyzer.getByteFrequencyData(bufferLength)
-    this.#canvas.fillRect(0, 0, width, heigth)
+    this._visualizer.connectAudio(source)
 
-    const barWidth = (width / bufferLength) * 2.5
+    const presets = butterchurnPresets.getPresets();
+    const preset = presets['Flexi, martin + geiss - dedicated to the sherwin maxawow'];
 
-    for (let item of dataArray) {
-      const barHeight = (item / 2.8)
-      this.#ctx.fillStyle = `rgb(50,50,200)`
-      this.#ctx.fillRect(x, heigth - barHeight, (width / bufferLength) * 2.5, barHeight)
-      x += barWidth + 1
-    }
+    this._visualizer.loadPreset(preset, 0.0); // 2nd argument is the number of seconds to blend presets
 
-    requestAnimationFrame(this.draw)
+// resize visualizer
+
+    this._visualizer.setRendererSize(width, height);
+
+    this.render()
 
     return this
+  }
+
+
+  render () {
+    requestAnimationFrame(() => this.render())
+    this._visualizer.render()
   }
 }

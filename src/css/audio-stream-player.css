@@ -4,6 +4,14 @@
     align-items: center;
 }
 
+#visualizer {
+    top: 0;
+    left: 0;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+}
+
 .audio-stream-player span {
     margin-bottom: 10px;
 }

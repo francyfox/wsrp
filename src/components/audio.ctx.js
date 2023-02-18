@@ -8,7 +8,7 @@ import AudioVisualizer from './audio.visualizer';
 export default class AudioCtx {
   key = ''
   sourceNode
-  visualizer = new AudioVisualizer()
+  visualizer
   state = {
     startedAt: null,
     pausedAt: null,
@@ -61,12 +61,15 @@ export default class AudioCtx {
     this.#url = url
     this.#bufferSize = bitRate * bufferTime
 
+    document.addEventListener('DOMContentLoaded', () => {
+      const visualizer = new AudioVisualizer('#visualizer', this.#ctx)
+      visualizer.canvas = document.querySelector('#visualizer')
+      this.visualizer = visualizer
+    })
   }
 
+
   async toggle () {
-    setInterval(() => {
-      console.log(this.#ctx.currentTime)
-    }, 1000)
     if (!this.state.startedAt) {
       const response = await this.fetchAudioSource()
       await this.getBufferFromAudioResponse(response)
@@ -187,6 +190,10 @@ export default class AudioCtx {
       let buffer = this.#stack.shift()
       this.sourceNode = this.#ctx.createBufferSource()
 
+      if (this.visualizer !== null) {
+        this.visualizer.draw(this.sourceNode)
+      }
+
       this.sourceNode.onended = () => {
         this.state.buffer.played.value += 1
       }
@@ -209,5 +216,9 @@ export default class AudioCtx {
 
   get steamStartTime () {
     return performance.getEntriesByName(this.key)[0].startTime
+  }
+
+  get context () {
+    return this.#ctx
   }
 }
